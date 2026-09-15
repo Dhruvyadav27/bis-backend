@@ -1,9 +1,5 @@
 server:
-  port: 8080
-
-  spring:
-    application:
-      name: bis-intelliguide
+  port: ${PORT:8080}
 
 
 spring:
@@ -32,7 +28,7 @@ app:
 
   embedding:
     api-key: ${EMBEDDING_API_KEY:}
-    model: ${EMBEDDING_MODEL:gemini-embedding-001}}
+    model: ${EMBEDDING_MODEL:gemini-embedding-001}
 
   rag:
     top-k: 5
