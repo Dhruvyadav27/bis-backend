@@ -27,37 +27,52 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
-    @Value("${app.cors.allowed-origin:http://localhost:5173}")
-    private String allowedOrigin;
+    /**
+     * Reads allowed CORS origins from:
+     *
+     * app.cors.allowed-origins
+     *
+     * which is mapped in application.yml to:
+     *
+     * CORS_ALLOWED_ORIGINS
+     */
+    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // Disable CSRF because this is a stateless JWT API
                 .csrf(csrf -> csrf.disable())
 
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // Enable CORS using our configuration below
+                .cors(cors ->
+                        cors.configurationSource(corsConfigurationSource())
+                )
 
+                // JWT based authentication = stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // IMPORTANT:
-                        // Allow browser CORS preflight requests
+                        // Browser CORS preflight requests must be allowed
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Authentication endpoints
+                        // Authentication endpoints are public
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
 
-                        // Admin endpoints
+                        // Admin endpoints require ADMIN role
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
-                        // Everything else requires authentication
+                        // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )
 
+                // JWT filter runs before Spring's username/password filter
                 .addFilterBefore(
                         jwtAuthFilter,
                         UsernamePasswordAuthenticationFilter.class
@@ -71,13 +86,22 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
+        /*
+         * Supports one or multiple origins separated by commas.
+         *
+         * Example:
+         *
+         * http://localhost:5173,
+         * https://bis-frontend-git-main-ymulayamyadav99-2154s-projects.vercel.app
+         */
         configuration.setAllowedOrigins(
-                Arrays.stream(allowedOrigin.split(","))
+                Arrays.stream(allowedOrigins.split(","))
                         .map(String::trim)
                         .filter(origin -> !origin.isBlank())
                         .toList()
         );
 
+        // HTTP methods allowed from the frontend
         configuration.setAllowedMethods(
                 List.of(
                         "GET",
@@ -89,13 +113,16 @@ public class SecurityConfig {
                 )
         );
 
+        // Allow request headers including Authorization
         configuration.setAllowedHeaders(List.of("*"));
 
+        // Required when credentials/authentication are involved
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
+        // Apply CORS configuration to every endpoint
         source.registerCorsConfiguration("/**", configuration);
 
         return source;

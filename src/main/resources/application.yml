@@ -1,47 +1,70 @@
 server:
   port: ${PORT:8080}
 
-
 spring:
   application:
     name: bis-intelliguide
+
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 50MB
+
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb+srv://<user>:<password>@<cluster>.mongodb.net/bis_db?retryWrites=true&w=majority}
 
 app:
+
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
 
   jwt:
     secret: ${JWT_SECRET:CHANGE_ME_LOCAL_DEV_ONLY_MIN_32_CHARS_LONG}
-    expiry-ms: ${JWT_EXPIRY:3600000}          # 1 hour
-    refresh-expiry-ms: ${JWT_REFRESH_EXPIRY:604800000}  # 7 days
+    expiry-ms: ${JWT_EXPIRY:3600000}
+    refresh-expiry-ms: ${JWT_REFRESH_EXPIRY:604800000}
 
+  # ==========================================================
+  # CORS CONFIGURATION
+  # ==========================================================
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+  # ==========================================================
+  # SARVAM
+  # ==========================================================
   sarvam:
     api-key: ${SARVAM_API_KEY:}
     base-url: ${SARVAM_BASE_URL:https://api.sarvam.ai}
+
+  # ==========================================================
+  # LLM
+  # ==========================================================
   llm:
     api-key: ${LLM_API_KEY:}
     model: ${LLM_MODEL:gemini-3.6-flash}
 
+  # ==========================================================
+  # EMBEDDING
+  # ==========================================================
   embedding:
     api-key: ${EMBEDDING_API_KEY:}
     model: ${EMBEDDING_MODEL:gemini-embedding-001}
 
+  # ==========================================================
+  # RAG
+  # ==========================================================
   rag:
     top-k: 5
     confidence:
       high-threshold: 0.90
       moderate-threshold: 0.70
-      # below moderate-threshold => "needs-verification" / insufficient evidence
+      # Below moderate threshold => needs-verification /
+      # insufficient evidence
 
+  # ==========================================================
+  # ADMIN SEED
+  # ==========================================================
   admin:
     seed:
       enabled: ${ADMIN_SEED_ENABLED:true}
@@ -49,6 +72,9 @@ app:
       password: ${ADMIN_SEED_PASSWORD:ChangeMe@12345}
       name: ${ADMIN_SEED_NAME:System Admin}
 
+# ==========================================================
+# LOGGING
+# ==========================================================
 logging:
   level:
     root: INFO
