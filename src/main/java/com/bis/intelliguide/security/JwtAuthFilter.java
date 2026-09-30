@@ -28,9 +28,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                     @NonNull HttpServletResponse response,
-                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
 
+        // =========================================================
+        // CORS PREFLIGHT REQUEST
+        // OPTIONS requests do not contain the user's JWT.
+        // Let Spring Security's CORS configuration handle them.
+        // =========================================================
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // =========================================================
+        // JWT AUTHENTICATION
+        // =========================================================
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -44,11 +58,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String userId = jwtService.extractUserId(token);
             String role = jwtService.extractRole(token);
 
-            java.util.List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+            List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+
             if (role != null && !role.isEmpty() && !"null".equals(role)) {
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
             }
-            var authToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+
+            var authToken = new UsernamePasswordAuthenticationToken(
+                    userId,
+                    null,
+                    authorities
+            );
+
             SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
