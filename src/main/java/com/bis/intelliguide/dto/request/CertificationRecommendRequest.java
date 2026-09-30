@@ -11,5 +11,9 @@ public class CertificationRecommendRequest {
     /** MSME | LARGE | FOREIGN */
     private String manufacturerType;
 
+    private String productCategory;
     private Boolean udyamRegistered;
+
+    /** naya field: spec ke rule-chain ka 5th branch — user explicitly management-system cert maangta hai */
+    private Boolean managementSystemCertificationRequested;
 }

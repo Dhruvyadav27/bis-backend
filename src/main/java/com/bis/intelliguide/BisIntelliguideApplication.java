@@ -44,11 +44,12 @@ public class BisIntelliguideApplication {
                     .passwordHash(passwordEncoder.encode(seedPassword))
                     .role("ADMIN")
                     .status("ACTIVE")
+                    .profileCompleted(true)
                     .createdAt(Instant.now())
                     .build();
             userRepository.save(admin);
             System.out.println("[SEED] First ADMIN account created for: " + seedEmail
                     + " (change the password immediately after first login)");
-        };
+        };  }
+
     }
-}

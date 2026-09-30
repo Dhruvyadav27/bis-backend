@@ -4,23 +4,27 @@ import com.bis.intelliguide.dto.request.AssistantQueryRequest;
 import com.bis.intelliguide.dto.response.AssistantResponse;
 import com.bis.intelliguide.service.rag.GenerationResult;
 import com.bis.intelliguide.service.rag.GenerationService;
+import com.bis.intelliguide.service.translate.SarvamTranslateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-/**
- * Reactive router + context-aware floating widget backend. Classifies the free-form
- * query to the right worker-agent domain (very simple keyword routing here — swap for
- * an LLM-based classifier prompt later if needed) and answers in-context, or suggests
- * navigating to a different agent if it's out of scope for the current page.
- */
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AssistantRouterService {
 
     private final GenerationService generationService;
+    private final SarvamTranslateService translator;
+
+    private static final List<String> GENERAL_TRIGGERS = List.of(
+            "what is", "what's", "what are", "how do i", "how can i", "how does",
+            "how to", "explain", "define", "why do", "why does", "tell me about"
+    );
 
     public AssistantResponse handle(AssistantQueryRequest request) {
-        String q = request.getQuery().toLowerCase();
+        String english = translator.toEnglish(request.getQuery());   // routing works on English
+        String q = english.toLowerCase();
         String currentAgent = request.getContext() != null ? request.getContext().getCurrentAgent() : null;
 
         String targetCollection = "standards";
@@ -45,13 +49,22 @@ public class AssistantRouterService {
         }
 
         boolean shouldRedirect = suggestedRoute != null && !suggestedRoute.equals(currentAgent);
+        boolean looksGeneral = GENERAL_TRIGGERS.stream().anyMatch(q::contains);
 
-        GenerationResult result = generationService.generateGroundedAnswer(request.getQuery(), targetCollection);
+        GenerationResult result;
+        if (looksGeneral) {
+            result = generationService.generateGeneralKnowledgeAnswer(english);
+        } else {
+            result = generationService.generateGroundedAnswer(english, targetCollection);
+            if (result.isInsufficientEvidence()) {
+                result = generationService.generateGeneralKnowledgeAnswer(english);
+            }
+        }
 
         return AssistantResponse.builder()
                 .answer(result.getAnswer())
                 .suggestedAction(shouldRedirect
-                        ? new AssistantResponse.SuggestedAction(suggestedLabel, suggestedRoute)
+                        ? new AssistantResponse.SuggestedAction(translator.fromEnglish(suggestedLabel), suggestedRoute)
                         : null)
                 .shouldRedirect(shouldRedirect)
                 .build();

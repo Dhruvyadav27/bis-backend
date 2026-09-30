@@ -13,4 +13,14 @@ public class AdminOverviewResponse {
     private long totalServices;
     private long totalQueries;
     private long flaggedThisWeek;
+    private java.util.List<FlaggedAnswerDto> recentFlaggedQueries;
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class FlaggedAnswerDto {
+        private String id;
+        private String question;
+        private String agent;
+        private double confidenceScore;
+        private java.time.Instant createdAt;
+    }
 }

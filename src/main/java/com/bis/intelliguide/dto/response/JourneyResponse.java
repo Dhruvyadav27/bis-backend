@@ -11,6 +11,9 @@ import java.util.List;
 public class JourneyResponse {
     private String journeyId;
     private int currentStep;
+    private String status;
+    private String productTitle;
+    private String productDescription;
     private List<StageDto> stages;
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
@@ -19,5 +22,6 @@ public class JourneyResponse {
         private String title;
         private String status;
         private Object result;
+        private String agentUsed;
     }
 }

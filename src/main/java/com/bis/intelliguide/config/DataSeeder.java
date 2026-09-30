@@ -23,6 +23,7 @@ public class DataSeeder implements CommandLineRunner {
 
     private final HuidRecordRepository huidRecordRepository;
     private final LabRepository labRepository;
+    private final com.bis.intelliguide.repository.LabGeolocationRepository labGeolocationRepository;
 
     @Override
     public void run(String... args) {
@@ -44,6 +45,24 @@ public class DataSeeder implements CommandLineRunner {
                     .name("Central Testing Lab, Indore").state("Madhya Pradesh").district("Indore")
                     .distanceMeta(190.5).scope("Textiles, helmets, general safety")
                     .workingHours("09:30-17:30 Mon-Fri").recognitionStatus("RECOGNIZED").build());
+        }
+
+        if (labGeolocationRepository.count() == 0) {
+            labGeolocationRepository.saveAll(java.util.List.of(
+                com.bis.intelliguide.model.LabGeolocation.builder()
+                    .labName("BIS Recognized Lab, Bhopal")
+                    .state("Madhya Pradesh").district("Bhopal").city("Bhopal")
+                    .address("E-5, Arera Colony, Bhopal")
+                    .location(com.bis.intelliguide.model.LabGeolocation.GeoPoint.builder().type("Point").coordinates(new double[]{77.4340, 23.2330}).build())
+                    .build(),
+                com.bis.intelliguide.model.LabGeolocation.builder()
+                    .labName("Central Testing Lab, Indore")
+                    .state("Madhya Pradesh").district("Indore").city("Indore")
+                    .address("Vijay Nagar, Indore")
+                    .location(com.bis.intelliguide.model.LabGeolocation.GeoPoint.builder().type("Point").coordinates(new double[]{75.8577, 22.7196}).build())
+                    .build()
+            ));
+            System.out.println("[SEED] Seeded 2 lab geolocation records.");
         }
     }
 }

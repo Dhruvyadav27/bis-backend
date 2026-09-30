@@ -25,4 +25,9 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
+
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleAuth(@Valid @RequestBody com.bis.intelliguide.dto.request.GoogleAuthRequest request) {
+        return ResponseEntity.ok(authService.authenticateWithGoogle(request.getIdToken()));
+    }
 }

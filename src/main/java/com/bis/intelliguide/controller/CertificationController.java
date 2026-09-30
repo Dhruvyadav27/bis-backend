@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.bis.intelliguide.dto.response.CertificationAskResponse;
 
 @RestController
 @RequestMapping("/api/certification")
@@ -21,5 +22,12 @@ public class CertificationController {
                                                                       Authentication authentication) {
         String userId = authentication != null ? (String) authentication.getPrincipal() : null;
         return ResponseEntity.ok(certificationGuideService.recommend(request, userId));
+    }
+
+    @PostMapping("/{schemeName}/ask")
+    public ResponseEntity<CertificationAskResponse> askFollowUp(
+            @PathVariable String schemeName,
+            @Valid @RequestBody com.bis.intelliguide.dto.request.CertificationAskRequest request) {
+        return ResponseEntity.ok(certificationGuideService.askFollowUp(schemeName, request.getQuery()));
     }
 }

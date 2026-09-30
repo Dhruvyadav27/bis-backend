@@ -27,6 +27,10 @@ public class User {
     private String role;
 
     private String phone;
+    private String googleId;
+    private Boolean udyamRegistered;
+    private String labAffiliation;
+    private Boolean profileCompleted;
     private String preferredLanguage;
 
     /** ACTIVE | DISABLED */

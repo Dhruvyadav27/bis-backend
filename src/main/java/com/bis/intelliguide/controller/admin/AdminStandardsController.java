@@ -69,8 +69,8 @@ public class AdminStandardsController {
     }
 
     @PostMapping("/{id}/reject")
-    public Standard reject(@PathVariable String id, @Valid @RequestBody RejectRequest request) {
-        return contentModerationService.reject(id, request.getReason());
+    public Standard reject(@PathVariable String id, @Valid @RequestBody RejectRequest request, Authentication authentication) {
+        return contentModerationService.reject(id, request.getReason(), (String) authentication.getPrincipal());
     }
 
     @GetMapping("/{id}/history")

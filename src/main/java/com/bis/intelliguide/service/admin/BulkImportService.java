@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.bis.intelliguide.model.BisService;
+import com.bis.intelliguide.model.CertificationScheme;
+import com.bis.intelliguide.repository.BisServiceRepository;
+import com.bis.intelliguide.repository.CertificationSchemeRepository;
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +34,8 @@ public class BulkImportService {
     private final LabRepository labRepository;
     private final PdfOcrService pdfOcrService;
     private final IngestionService ingestionService;
+    private final CertificationSchemeRepository schemeRepository;
+    private final BisServiceRepository bisServiceRepository;
     //private final com.bis.intelliguide.service.rag.IngestionService ingestionService;
 
     // =========================================================
@@ -507,6 +514,113 @@ public class BulkImportService {
 
         standardRepository.saveAll(toSave);
 
+        return toSave.size();
+    }
+    // =========================================================
+    // CSV IMPORT — CERTIFICATION SCHEMES
+    // Expected columns (header row skipped): schemeName,description,eligibility,
+    // documentsRequired (pipe-separated, e.g. "Doc A|Doc B"),estimatedTimeline
+    // =========================================================
+
+    public int importSchemesCsv(MultipartFile file, String adminId) throws IOException {
+
+        List<CertificationScheme> toSave = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+
+            String line;
+            boolean first = true;
+
+            while ((line = reader.readLine()) != null) {
+                if (first) {
+                    first = false;
+                    continue;
+                }
+                if (line.isBlank()) continue;
+
+                String[] cols = line.split(",", -1);
+
+                String schemeName = safe(cols, 0);
+                if (schemeName.isBlank()) continue; // schemeName is the minimum required field
+
+                String documentsRaw = safe(cols, 3);
+                List<String> documentsRequired = documentsRaw.isBlank()
+                        ? new ArrayList<>()
+                        : Arrays.asList(documentsRaw.split("\\|"));
+
+                toSave.add(CertificationScheme.builder()
+                        .schemeName(schemeName)
+                        .description(safe(cols, 1))
+                        .eligibility(safe(cols, 2))
+                        .documentsRequired(documentsRequired)
+                        .estimatedTimeline(safe(cols, 4))
+                        .status("DRAFT")
+                        .version(1)
+                        .createdBy(adminId)
+                        .lastEditedBy(adminId)
+                        .build());
+            }
+        }
+
+        schemeRepository.saveAll(toSave);
+        return toSave.size();
+    }
+
+    // =========================================================
+    // CSV IMPORT — BIS SERVICES
+    // Expected columns (header row skipped): serviceName,category,description,
+    // procedure (pipe-separated steps, e.g. "Apply online|Pay fee|Get certificate")
+    // =========================================================
+
+    public int importServicesCsv(MultipartFile file, String adminId) throws IOException {
+
+        List<BisService> toSave = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+
+            String line;
+            boolean first = true;
+
+            while ((line = reader.readLine()) != null) {
+                if (first) {
+                    first = false;
+                    continue;
+                }
+                if (line.isBlank()) continue;
+
+                String[] cols = line.split(",", -1);
+
+                String serviceName = safe(cols, 0);
+                if (serviceName.isBlank()) continue; // serviceName is the minimum required field
+
+                String procedureRaw = safe(cols, 3);
+                List<BisService.ProcedureStep> procedure = new ArrayList<>();
+                if (!procedureRaw.isBlank()) {
+                    String[] steps = procedureRaw.split("\\|");
+                    for (int i = 0; i < steps.length; i++) {
+                        procedure.add(BisService.ProcedureStep.builder()
+                                .step(i + 1)
+                                .description(steps[i].trim())
+                                .build());
+                    }
+                }
+
+                toSave.add(BisService.builder()
+                        .serviceName(serviceName)
+                        .category(safe(cols, 1))
+                        .description(safe(cols, 2))
+                        .procedure(procedure)
+                        .status("DRAFT")
+                        .version(1)
+                        .createdBy(adminId)
+                        .lastEditedBy(adminId)
+                        .build());
+            }
+        }
+
+        bisServiceRepository.saveAll(toSave);
         return toSave.size();
     }
 

@@ -14,4 +14,9 @@ public class StandardMatch {
     /** high | moderate | needs-verification, derived from matchScore thresholds */
     private String confidenceLabel;
     private String clause;
+
+    // ===== naye fields (spec ke response contract ke according) =====
+    private boolean isCompulsory;
+    /** CRS | QCO | VOLUNTARY */
+    private String regulatoryType;
 }

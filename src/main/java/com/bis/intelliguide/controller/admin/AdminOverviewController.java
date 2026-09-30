@@ -29,6 +29,19 @@ public class AdminOverviewController {
                 .filter(l -> l.isFlagged() && l.getCreatedAt() != null && l.getCreatedAt().isAfter(weekAgo))
                 .count();
 
+        java.util.List<AdminOverviewResponse.FlaggedAnswerDto> recentFlagged = aiAnswerLogRepository.findAll().stream()
+                .filter(com.bis.intelliguide.model.AiAnswerLog::isFlagged)
+                .sorted(java.util.Comparator.comparing(com.bis.intelliguide.model.AiAnswerLog::getCreatedAt, java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder())))
+                .limit(5)
+                .map(l -> AdminOverviewResponse.FlaggedAnswerDto.builder()
+                        .id(l.getId())
+                        .question(l.getQuestion())
+                        .agent(l.getAgent())
+                        .confidenceScore(l.getConfidenceScore())
+                        .createdAt(l.getCreatedAt())
+                        .build())
+                .toList();
+
         return AdminOverviewResponse.builder()
                 .totalStandards(standardRepository.count())
                 .totalDocuments(bisDocumentRepository.count())
@@ -36,6 +49,7 @@ public class AdminOverviewController {
                 .totalServices(bisServiceRepository.count())
                 .totalQueries(aiAnswerLogRepository.count())
                 .flaggedThisWeek(flaggedThisWeek)
+                .recentFlaggedQueries(recentFlagged)
                 .build();
     }
 }

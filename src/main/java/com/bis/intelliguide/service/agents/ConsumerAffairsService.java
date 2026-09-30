@@ -9,7 +9,7 @@ import com.bis.intelliguide.service.rag.GenerationResult;
 import com.bis.intelliguide.service.rag.GenerationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import com.bis.intelliguide.service.translate.SarvamTranslateService;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +27,7 @@ public class ConsumerAffairsService {
 
     private final GenerationService generationService;
     private final ComplaintRepository complaintRepository;
+    private final SarvamTranslateService translator;
 
     public ConsumerAskResponse ask(String query) {
         GenerationResult result = generationService.generateGroundedAnswer(query, "consumer_protection");
@@ -38,6 +39,7 @@ public class ConsumerAffairsService {
                 .insufficientEvidence(result.isInsufficientEvidence())
                 .build();
     }
+
 
     public ComplaintResponse fileComplaint(ComplaintRequest request, String userId) {
         GenerationResult result = generationService.generateGroundedAnswer(
@@ -65,16 +67,26 @@ public class ConsumerAffairsService {
 
         complaintRepository.save(complaint);
 
+        String logged = translator.fromEnglish(
+                "Your complaint has been logged with reference"
+        );
+
+        List<String> rest = translator.fromEnglishAll(List.of(
+                "Our team will verify the applicable clause and evidence",
+                "For an official BIS record, also file via manakonline.in or the BIS CARE app"));
+
         return ComplaintResponse.builder()
                 .complaintId(referenceId)
                 .steps(List.of(
-                        "Your complaint has been logged with reference " + referenceId,
-                        "Our team will verify the applicable clause and evidence",
-                        "For an official BIS record, also file via manakonline.in or the BIS CARE app"
+                        logged + ": " + referenceId,
+                        rest.get(0),
+                        rest.get(1)
                 ))
                 .applicableClause(complaint.getApplicableClause())
                 .status(status)
                 .redirectUrl("https://www.manakonline.in")
                 .build();
     }
+
+
 }

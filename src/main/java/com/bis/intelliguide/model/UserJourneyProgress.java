@@ -19,11 +19,19 @@ public class UserJourneyProgress {
     private List<Stage> stages;
     private Instant updatedAt;
 
+    private String productTitle;
+    private String productDescription;
+    private String state;
+    private String district;
+    private String manufacturerType;
+    private String status; // IN_PROGRESS | COMPLETED
+    private Instant createdAt;
+
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class Stage {
         private int step;
         private String title;
-        /** PENDING | IN_PROGRESS | DONE */
+        /** PENDING | IN_PROGRESS | DONE | SKIPPED */
         private String status;
         private Object result;
         private String agentUsed;

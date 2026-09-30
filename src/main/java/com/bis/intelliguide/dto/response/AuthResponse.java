@@ -14,6 +14,9 @@ public class AuthResponse {
     public static class UserSummary {
         private String id;
         private String name;
+        private String email;
         private String role;
+        private boolean isNewUser;
+        private Boolean profileCompleted;
     }
 }

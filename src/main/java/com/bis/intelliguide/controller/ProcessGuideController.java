@@ -2,7 +2,9 @@ package com.bis.intelliguide.controller;
 
 import com.bis.intelliguide.dto.request.JourneyAdvanceRequest;
 import com.bis.intelliguide.dto.request.JourneyStartRequest;
+import com.bis.intelliguide.dto.request.JourneyAskRequest;
 import com.bis.intelliguide.dto.response.JourneyAdvanceResponse;
+import com.bis.intelliguide.dto.response.JourneyAskResponse;
 import com.bis.intelliguide.dto.response.JourneyResponse;
 import com.bis.intelliguide.service.orchestrator.ProcessGuideOrchestratorService;
 import jakarta.validation.Valid;
@@ -36,11 +38,18 @@ public class ProcessGuideController {
     public ResponseEntity<JourneyAdvanceResponse> advance(@Valid @RequestBody JourneyAdvanceRequest request,
                                                             Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
-        // NOTE: manufacturerType/state/district would ideally be carried from the original
-        // JourneyStartRequest via the stored journey document; passed as null here in this
-        // scaffold's advance() call for brevity — wire these through when persisting the
-        // original journey context in a full build.
         return ResponseEntity.ok(orchestratorService.advance(
-                request.getJourneyId(), request.getAction(), userId, null, null, null));
+                request.getJourneyId(), request.getStep(), request.getAction(), userId, request.getLat(), request.getLng()));
+    }
+
+    @GetMapping("/{journeyId}")
+    public ResponseEntity<JourneyResponse> getJourney(@PathVariable String journeyId) {
+        return ResponseEntity.ok(orchestratorService.getJourney(journeyId));
+    }
+
+    @PostMapping("/{journeyId}/ask")
+    public ResponseEntity<JourneyAskResponse> ask(@PathVariable String journeyId,
+                                                    @Valid @RequestBody JourneyAskRequest request) {
+        return ResponseEntity.ok(orchestratorService.ask(journeyId, request.getQuery()));
     }
 }

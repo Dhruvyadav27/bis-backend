@@ -14,17 +14,22 @@ spring:
       uri: ${MONGODB_URI:mongodb+srv://<user>:<password>@<cluster>.mongodb.net/bis_db?retryWrites=true&w=majority}
 
 app:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
   jwt:
     secret: ${JWT_SECRET:CHANGE_ME_LOCAL_DEV_ONLY_MIN_32_CHARS_LONG}
     expiry-ms: ${JWT_EXPIRY:3600000}          # 1 hour
     refresh-expiry-ms: ${JWT_REFRESH_EXPIRY:604800000}  # 7 days
 
   cors:
-    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
-
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  sarvam:
+    api-key: ${SARVAM_API_KEY:}
+    base-url: ${SARVAM_BASE_URL:https://api.sarvam.ai}
   llm:
     api-key: ${LLM_API_KEY:}
-    model: ${LLM_MODEL:gemini-2.5-flash}
+    model: ${LLM_MODEL:gemini-3.6-flash}
 
   embedding:
     api-key: ${EMBEDDING_API_KEY:}

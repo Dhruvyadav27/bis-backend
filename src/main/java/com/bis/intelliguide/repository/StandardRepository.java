@@ -6,9 +6,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StandardRepository extends MongoRepository<Standard, String> {
     Page<Standard> findByStatus(String status, Pageable pageable);
     Page<Standard> findByStatusAndCategory(String status, String category, Pageable pageable);
     List<Standard> findByStatusAndTitleContainingIgnoreCase(String status, String title);
+    Optional<Standard> findByIsNumber(String isNumber);
 }

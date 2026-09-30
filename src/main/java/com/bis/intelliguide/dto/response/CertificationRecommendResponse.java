@@ -17,9 +17,29 @@ public class CertificationRecommendResponse {
     private List<CitationRef> references;
     private boolean insufficientEvidence;
 
+    private MatchedScheme matchedScheme;
+    private String friendlyExplanation;
+    private String matchReason;
+    private String confidence;
+
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class StepDto {
         private int step;
         private String title;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MatchedScheme {
+        private String schemeName;
+        private String description;
+        private String eligibility;
+        private List<String> documentsRequired;
+        private List<StepDto> processSteps;
+        private String estimatedTimeline;
+        private int version;
+        private java.time.Instant publishedAt;
     }
 }

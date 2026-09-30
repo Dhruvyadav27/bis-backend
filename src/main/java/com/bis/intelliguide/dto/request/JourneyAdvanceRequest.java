@@ -13,4 +13,7 @@ public class JourneyAdvanceRequest {
     /** mark_done */
     @NotBlank
     private String action;
+
+    private Double lat;
+    private Double lng;
 }
